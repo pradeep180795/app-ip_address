@@ -1,22 +1,4 @@
 /*
-  Import the built-in path module.
-  See https://nodejs.org/api/path.html
-  The path module provides utilities for working with file and directory paths.
-  IAP requires the path module to access local file modules.
-  The path module exports an object.
-  Assign the imported object to variable path.
-*/
-const path = require('path');
-
-/**
- * Import helper function module located in the same directory
- * as this module. IAP requires the path object's join method
- * to unequivocally locate the file module.
- */
-const { getIpv4MappedIpv6Address } = require(path.join(__dirname, 'ipv6.js'));
-
-
-/*
   Import the ip-cidr npm package.
   See https://www.npmjs.com/package/ip-cidr
   The ip-cidr package exports a class.
@@ -31,18 +13,7 @@ const IPCIDR = require('ip-cidr');
  * @param {callback} callback - A callback function.
  * @return {string} (firstIpAddress) - An IPv4 address.
  */
-
-
-class IpAddress {
-  constructor() {
-    // IAP's global log object is used to output errors, warnings, and other
-    // information to the console, IAP's log files, or a Syslog server.
-    // For more information, consult the Log Class guide on the Itential
-    // Developer Hub https://developer.itential.io/ located
-    // under Documentation -> Developer Guides -> Log Class Guide
-    log.info('Starting the IpAddress product.');
-  }
-getFirstIpAddress(cidrStr, callback) {
+function getFirstIpAddress(cidrStr, callback) {
 
   // Initialize return arguments for callback
   let firstIpAddress = null;
@@ -73,8 +44,35 @@ getFirstIpAddress(cidrStr, callback) {
   // data as the second argument to the callback function.
   return callback(firstIpAddress, callbackError);
 }
-  
+
+
+/*
+  This section is used to test function and log any errors.
+  We will make several positive and negative tests.
+*/
+function main() {
+  // Create an array of tests with both valid CIDR and invalid IP subnets.
+  let sampleCidrs = ['172.16.10.0/24', '172.16.10.0 255.255.255.0', '172.16.10.128/25', '192.168.1.216/30'];
+  let sampleCidrsLen = sampleCidrs.length;
+
+  // Iterate over sampleCidrs and pass the element's value to getFirstIpAddress().
+  for (var i = 0; i < sampleCidrsLen; i++) {
+    console.log(`\n--- Test Number ${i + 1} getFirstIpAddress(${sampleCidrs[i]}) ---`);
+    // Call getFirstIpAddress and pass the test subnet and an anonymous callback function.
+    // The callback is using the fat arrow operator: () => { }
+    getFirstIpAddress(sampleCidrs[i], (data, error) => {
+      // Now we are inside the callback function.
+      // Display the results on the console.
+      if (error) {
+        console.error(`Error returned from GET request: ${error}`);
+      } else {
+        console.log(`Response returned from GET request: ${data}`);
+      }
+    });
+  }
 }
 
-module.exports = new IpAddress;
-
+/*
+  Call main to run it.
+*/
+main();
